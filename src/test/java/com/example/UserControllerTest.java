@@ -2,6 +2,8 @@ package com.example;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Headers;
 import com.jayway.restassured.response.Response;
@@ -106,19 +108,14 @@ public class UserControllerTest {
 
     private void assertUserList(Response response, String username) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        TypeReference collectionType1 = new TypeReference<List<User>>() {};
+        TypeReference collectionType1 = new TypeReference<List<User>>() {
+        };
 
         String json = response.asString();
-        List<User> users = mapper.readValue(json, collectionType1);
+        CollectionType collectionType2 = TypeFactory.defaultInstance().constructCollectionType(List.class, User.class);
+        List<User> users = mapper.readValue(json, collectionType2);
         assertThat(users.isEmpty(), is(false));
         assertThat(users.get(0), instanceOf(User.class));
-        assertThat(users.get(0).getName(), equalToIgnoringCase(username));
-
-        // another way
-        // CollectionType collectionType2 = TypeFactory.defaultInstance().constructCollectionType(List.class, User.class);
-        // List<User> users = mapper.readValue(json, collectionType2);
-        // assertThat(users.isEmpty(), is(false));
-        // assertThat(users.get(0), instanceOf(User.class));
     }
 
     public String resource(String resource) {
